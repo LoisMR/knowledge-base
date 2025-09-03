@@ -1,6 +1,6 @@
-# 📚 Learning Repository
+# Learning Repository
 
-Bienvenue dans mon dépôt **Learning** — ma base de connaissances personnelle pour centraliser mes notes, résumés et guides techniques sur différents langages, frameworks et concepts.
+Bienvenue dans mon dépôt **Learning** — ma base de connaissances personnelle pour centraliser mes notes, résumés et guides techniques sur différents langages, architectures, frameworks et concepts.
 
 ## 🎯 Objectif
 L’idée est simple :
