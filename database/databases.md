@@ -4,8 +4,6 @@
 
 Ce document résume les grandes familles de bases de données et compare les principales solutions disponibles dans chaque catégorie. L’objectif est d’offrir une vision claire pour choisir la bonne technologie en fonction du contexte.
 
----
-
 ## 1. Les familles de bases de données
 
 ### Relationnelles (SQL)
@@ -13,53 +11,147 @@ Ce document résume les grandes familles de bases de données et compare les pri
 - Idéal pour les applications traditionnelles : ERP, CRM, e-commerce.
 - Garantissent des transactions ACID (Atomicité, Cohérence, Isolation, Durabilité).
 
+**Pourquoi c’est plus efficace ?**
+- Transactions ACID : chaque opération (ex : transfert bancaire) est garantie sans incohérence, même en cas de panne.  
+- Indexation avancée : B-tree, hash, GIN… pour des recherches rapides même sur de grands volumes.  
+- Requêtes complexes : support des jointures, agrégations, sous-requêtes → idéal pour des relations riches.  
+- Optimisations matures : décennies de recherche, planificateurs de requêtes sophistiqués.  
+
+---
+
 ### Colonnaires
 - Optimisées pour l’analytique (OLAP).
 - Stockage par colonne au lieu de ligne → excellentes performances pour les agrégations et requêtes BI.
 - Utilisées pour data warehouses et data lakes.
+
+**Pourquoi c’est plus efficace ?**
+- Lecture sélective : seules les colonnes nécessaires sont lues (ex : moyenne des prix → on lit uniquement la colonne *prix*).  
+- Compression efficace : colonnes homogènes (mêmes types) compressées fortement → moins d’espace disque et plus de rapidité.  
+- Traitement vectorisé : les calculs d’agrégation exploitent le CPU de manière optimisée.  
+- Séparation stockage/calcul (dans Snowflake, BigQuery) : permet de scaler indépendamment selon la charge.  
+
+---
 
 ### Key-Value
 - Simples paires clé → valeur.
 - Idéal pour sessions, caches, systèmes à fort trafic.
 - Pas de requêtes complexes, mais très rapides.
 
+**Pourquoi c’est plus efficace ?**
+- Complexité constante O(1) : accès direct en connaissant la clé.  
+- Pas de parsing de requêtes : pas besoin d’optimiser ou interpréter du SQL.  
+- Idéal pour haute fréquence : des millions de lectures/écritures par seconde possibles.  
+- Très faible latence : microsecondes en mémoire, millisecondes sur disque (utilisation de la RAM).  
+
+---
+
 ### In-Memory
 - Données stockées directement en mémoire RAM.
 - Performances extrêmes, utile pour cache, temps réel, géospatial.
 - Risque de perte de données si non persisté.
+
+**Pourquoi c’est plus efficace ?**
+- Accès RAM : environ 100 à 1000x plus rapide qu’un accès disque.  
+- TTL (time-to-live) intégré : données expirent automatiquement → pas de pollution de cache.  
+- Structures optimisées (Redis, Hazelcast) : listes, sets, sorted sets, bitmaps en mémoire.  
+- Réplication en mémoire : plusieurs nœuds RAM peuvent partager instantanément l’état.  
+
+---
 
 ### Wide Column
 - Stockage sous forme de familles de colonnes (hybride entre relationnel et clé-valeur).
 - Excellente scalabilité horizontale.
 - Idéal pour IoT, télémétrie, grands volumes distribués.
 
+**Pourquoi c’est plus efficace ?**
+- Scalabilité horizontale massive : conçu pour s’étendre sur des centaines de serveurs.  
+- Tolérance aux pannes : réplication automatique des données entre nœuds.  
+- Écriture rapide séquentielle (LSM-trees) : parfait pour gros volumes de logs.  
+- Flexibilité par ligne : chaque clé (ligne) peut contenir un nombre variable de colonnes.  
+
+---
+
 ### Time Series
 - Optimisées pour les données chronologiques (logs, métriques).
 - Support natif du time-stamping, des intervalles et des agrégations temporelles.
+
+**Pourquoi c’est plus efficace ?**
+- Index temporel : chaque donnée est rangée par timestamp → requêtes par plages rapides.  
+- Compression temporelle : stocke efficacement des millions de points continus.  
+- Fonctions intégrées : downsampling, moyennes mobiles, interpolations.  
+- Conçues pour ingestion rapide : parfait pour métriques IoT ou monitoring.  
+
+---
 
 ### Ledger (Immuable)
 - Bases qui garantissent l’immutabilité des écritures.
 - Cas d’usage : audit, finance, traçabilité, supply chain.
 
+**Pourquoi c’est plus efficace ?**
+- Append-only : impossible de supprimer ou altérer une donnée.  
+- Vérifiabilité cryptographique : chaque entrée liée aux précédentes par hash.  
+- Historique complet : chaque modification conserve une trace horodatée.  
+- Confiance renforcée : idéal pour conformité réglementaire et finance.  
+
+---
+
 ### Geospatial
 - Bases ou extensions capables de gérer des entités géographiques.
 - Permettent des requêtes spatiales (distances, intersections, zones).
+
+**Pourquoi c’est plus efficace ?**
+- Index géospatiaux (R-tree, quad-tree, GiST) : recherches spatiales rapides.  
+- Fonctions spécialisées : calcul de distance, intersections, zones tampon.  
+- Support natif des systèmes de coordonnées (WGS84, etc.).  
+- Optimisé pour grands volumes : millions de points géographiques traités efficacement.  
+
+---
 
 ### Graph
 - Données modélisées comme des nœuds et arêtes.
 - Idéal pour les relations complexes (réseaux sociaux, moteurs de recommandation).
 
+**Pourquoi c’est plus efficace ?**
+- Accès direct aux relations : au lieu de jointures coûteuses, chaque nœud connaît ses voisins.  
+- Algorithmes intégrés : PageRank, shortest path, community detection.  
+- Requêtes expressives : langages comme Cypher décrivent les relations naturellement.  
+- Conçu pour graphe géant : réseaux sociaux, systèmes de recommandations, détection de fraude.  
+
+---
+
 ### Document
 - Stockage de documents JSON ou BSON.
 - Flexible, schéma dynamique, agile pour le développement.
+
+**Pourquoi c’est plus efficace ?**
+- JSON natif : correspond directement aux objets dans le code.  
+- Schéma flexible : pas besoin de migrations lourdes quand le modèle évolue.  
+- Indexation riche : n’importe quel champ peut être indexé.  
+- Support de requêtes complexes sur des structures imbriquées.  
+
+---
 
 ### Search
 - Moteurs de recherche full-text.
 - Idéal pour explorer des données textuelles massives.
 
+**Pourquoi c’est plus efficace ?**
+- Index inversé : accès instantané aux documents contenant un mot.  
+- Scoring et pertinence : classe les résultats en fonction de la proximité avec la requête.  
+- Recherche tolérante aux fautes (fuzzy matching).  
+- Optimisé pour données massives : logs, documents, données textuelles.  
+
+---
+
 ### Blob/Object Storage
 - Stockage d’objets binaires (images, vidéos, fichiers).
 - Distribué, haute disponibilité, utilisé pour l’archivage et les gros volumes.
+
+**Pourquoi c’est plus efficace ?**
+- Scalabilité illimitée : supporte des milliards d’objets.  
+- Résilience : réplique automatiquement les fichiers sur plusieurs zones.  
+- Coût optimisé : stockage bas coût pour fichiers volumineux.  
+- API simple : opérations PUT/GET universelles.  
 
 ---
 
@@ -166,9 +258,111 @@ Ce document résume les grandes familles de bases de données et compare les pri
 | **Ceph** | Très robuste, distribué | Complexité déploiement | Cloud distribué, HPC |
 | **HDFS** | Intégration Hadoop, fiable | Vieillit face à alternatives modernes | Big data, batch processing |
 
----
+## 3. Exemples pratiques
 
-## 3. Conclusion
+### Relationnelle (PostgreSQL)
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name TEXT,
+  email TEXT UNIQUE
+);
+
+INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');
+SELECT * FROM users WHERE email = 'alice@example.com';
+```
+
+### Colonnaire (Snowflake)
+```sql
+CREATE TABLE ventes (
+  id INT,
+  produit STRING,
+  prix FLOAT,
+  date_vente DATE
+);
+
+SELECT produit, AVG(prix) FROM ventes GROUP BY produit;
+```
+
+### Key-Value / In-Memory (Redis)
+```bash
+SET user:123:orders '[{"id":987,"produit":"Chaussures"},{"id":988,"produit":"Livre"}]'
+GET user:123:orders
+```
+
+### Wide Column (Cassandra)
+```sql
+CREATE TABLE capteurs (
+  device_id TEXT,
+  timestamp TIMESTAMP,
+  temperature DOUBLE,
+  PRIMARY KEY (device_id, timestamp)
+);
+
+INSERT INTO capteurs (device_id, timestamp, temperature)
+VALUES ('sensor-01', toTimestamp(now()), 22.5);
+```
+
+### Time Series (InfluxDB)
+```sql
+INSERT cpu,host=server01 usage_user=23.5
+SELECT MEAN(usage_user) FROM cpu WHERE time > now() - 1h GROUP BY time(1m);
+```
+
+### Ledger (Amazon QLDB)
+```sql
+INSERT INTO Transactions VALUE {
+  'id': 'tx-123',
+  'compte': 'A001',
+  'montant': 500,
+  'timestamp': current_date
+};
+```
+
+### Graph (Neo4j)
+```cypher
+CREATE (a:Person {name:'Alice'})
+CREATE (b:Person {name:'Bob'})
+CREATE (a)-[:AMI_AVEC]->(b);
+
+MATCH (a:Person)-[:AMI_AVEC]->(b:Person) RETURN a, b;
+```
+
+### Document (MongoDB)
+```js
+db.produits.insertOne({
+  nom: "Chaussures",
+  prix: 79.9,
+  tailles: [38, 39, 40, 41]
+});
+
+db.produits.find({ nom: "Chaussures" });
+```
+
+### Search (Elasticsearch)
+```json
+PUT /articles/_doc/1
+{
+  "titre": "Bases de données modernes",
+  "contenu": "Un guide des différentes familles de bases."
+}
+
+GET /articles/_search
+{
+  "query": { "match": { "contenu": "bases données" } }
+}
+```
+
+### Blob/Object Storage (S3)
+```bash
+aws s3 cp ./photo.jpg s3://mon-bucket/photos/photo.jpg
+```
+
+## 4. Comparaison RAM/CPU/Disque selon le type de BDD
+
+![Base type Comparison](./assets/base_type_comparison.png)
+
+## 5. Conclusion
 
 - Les bases **relationnelles** restent incontournables pour les systèmes transactionnels classiques.  
 - Les **colonnaires** dominent le monde analytique et BI.  
